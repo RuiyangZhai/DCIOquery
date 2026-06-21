@@ -245,7 +245,9 @@ DiseaseCIO <- R6Class("DiseaseCIO",
 
                            if (!dir.exists(temp_dir)) dir.create(temp_dir, recursive = TRUE)
 
-                           dl_url <- private$make_request(sprintf("%s/%s",data_id, f_name))
+                           dl_url <- ifelse(f_type=="AI-ready Data",
+                                            private$make_request(sprintf("%s/%s",data_id, f_name)),
+                                            private$make_request(sprintf("AI-ready data/%s", f_name)))
 
                            message(sprintf("Downloading %s...", f_name))
                            private$download_file(url = dl_url,destfile = file_name)
