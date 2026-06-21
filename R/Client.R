@@ -109,8 +109,8 @@ DiseaseCIO <- R6Class("DiseaseCIO",
                        #' @param therapy Character vector. The therapy categorys applied to the cohorts (e.g., c("Targeted Therapy")).
                        #' @param treatment Character vector. The treatment regimens (e.g., c("Ruxolitinib")).
                        #' @param sampling_location Character vector. The tissue origins or sampling locations(e.g., c("Tissue","Bone Marrow")).
-                       #' @param feature Character vector. The feature types to retain (e.g., c("Gene Expression","Clinical Data")).
-                       #' @param file_type Character vector. The file types to retain (e.g., c("Meta Info", "Feature Matrix")).
+                       #' @param feature Character vector. The feature types to retain (e.g., c("Gene Expression","Clinical Data", "Corpus", "QA")).
+                       #' @param file_type Character vector. The file types to retain (e.g., c("Meta Info", "Feature Matrix", "AI-ready Data")).
                        #' @param min_size Integer. The minimum sample size required for a dataset to be retained. Defaults to 0.
                        #' @return Returns the modified R6 object invisibly, allowing for method chaining.
                        filter_metadata = function(dataset=NULL,omic = NULL,disease = NULL,
