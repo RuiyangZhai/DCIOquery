@@ -11,23 +11,23 @@ With `DiseaseCIO`, you can easily:
 
 ## Installation
 
-You can install the development version of DTXRquery from GitHub using the `devtools` or `remotes` package:
+You can install the development version of DCIOquery from GitHub using the `devtools` or `remotes` package:
 
 ```R
 # install.packages("devtools")
-devtools::install_github("RuiyangZhai/DTXRquery")
+devtools::install_github("RuiyangZhai/DCIOquery")
 ```
 
 ## Quick Start / Examples
 Here is a typical workflow demonstrating how to initialize the client, filter data, load it into memory, and generate plots.
 
 #### 1. Initialize the Client
-Creating a new `DisTxRESP` object will automatically fetch the latest data manifest from the server.
+Creating a new `DCIOquery` object will automatically fetch the latest data manifest from the server.
 ```R
-library(DTXRquery)
+library(DCIOquery)
 
 # Initialize the client
-client <- DisTxRESP$new()
+client <- DCIOquery$new()
 # Connecting to server and fetching metadata table...
 # Downloading: 310 kB
 
@@ -35,74 +35,82 @@ client <- DisTxRESP$new()
 head(client$metadata)
 
 ```
-#### 2. Filter and Load Data
+#### 2. Search & Browse
+You can utilize the search and browsing functionalities of the DiseaseCIO database locally.
+```R
+##Search
+search_res <- client$search_DCIO("Taxonomy Abundance","g__Barnesiella",threshold = "FDR<0.2")
+# Connecting to DiseaseCIO...
+# Searching data...
+print(search_res)
+
+##Browse
+browse_res <- client$browse_DCIO("D310042","Gene-level Methylation","ART3")
+# Connecting to DiseaseCIO...
+# Querying data...
+print(search_res)
+```
+#### 3. Filter and Load Data
 You can chain methods together to filter the required data sets, download them and load them into memory for analysis.
 ```R
 # Filter and screen specific omics, diseases, drugs, etc
 client$filter_metadata(omic = c("Transcriptomics"),
                        disease = c("Inflammatory bowel disease"),
-                       intervention = c("Golimumab"),
+                       treatment = c("Golimumab"),
                        feature = c("Clinical Data","Gene Expression"))
 # Filtered down to 6 records.
 
 # Check the filtered subset table
 head(client$sub_table)
-# Dataset           Omics               Disease_Type    Disease_Subtype        Treatment_Regimen Intervention Sampling_Location Sample_Size    Feature_Type                        File_Name            File_Type
-# 1 DTXR100447 Transcriptomics Inflammatory bowel disease Ulcerative Colitis Immunomodulatory Therapy    Golimumab            Tissue          84   Clinical Data             DTXR100447_pdata.csv            Meta Info
-# 2 DTXR100447 Transcriptomics Inflammatory bowel disease Ulcerative Colitis Immunomodulatory Therapy    Golimumab            Tissue          84 Gene Expression DTXR100447_Differential_Gene.csv Differential Results
-# 3 DTXR100447 Transcriptomics Inflammatory bowel disease Ulcerative Colitis Immunomodulatory Therapy    Golimumab            Tissue          84 Gene Expression              DTXR100447_Gene.csv       Feature Matrix
-# 4 DTXR100448 Transcriptomics Inflammatory bowel disease Ulcerative Colitis Immunomodulatory Therapy    Golimumab            Tissue          59   Clinical Data             DTXR100448_pdata.csv            Meta Info
-# 5 DTXR100448 Transcriptomics Inflammatory bowel disease Ulcerative Colitis Immunomodulatory Therapy    Golimumab            Tissue          59 Gene Expression DTXR100448_Differential_Gene.csv Differential Results
-# 6 DTXR100448 Transcriptomics Inflammatory bowel disease Ulcerative Colitis Immunomodulatory Therapy    Golimumab            Tissue          59 Gene Expression              DTXR100448_Gene.csv       Feature Matrix
 
 # Batch download files
 your_save_dir = "my_data"
 client$download_files(your_save_dir)
-# Downloading DTXR100447_pdata.csv...
-# Downloading: 390 B     
-# Downloading DTXR100447_Differential_Gene.csv...
-# Downloading: 500 kB     
-# Downloading DTXR100447_Gene.csv...
+# Downloading D110204_pdata.csv...
+# Downloading: 360 B     
+# Downloading D110204_Differential_Gene.csv...
+# Downloading: 450 kB     
+# Downloading D110204_Gene.csv...
 # Downloading: 13 MB     
-# Downloading DTXR100448_pdata.csv...
-# Downloading: 440 B     
-# Downloading DTXR100448_Differential_Gene.csv...
-# Downloading: 410 kB     
-# Downloading DTXR100448_Gene.csv...
+# Downloading D110205_pdata.csv...
+# Downloading: 420 B     
+# Downloading D110205_Differential_Gene.csv...
+# Downloading: 390 kB     
+# Downloading D110205_Gene.csv...
 # Downloading: 9.2 MB     
 # 
 # Batch download complete.
 
 # Filter specific data sets and feature types
 client$filter_metadata(
-  dtxr = c("DTXR600031","DTXR500068"),
-  feature = c("Clinical Data","Microbial Abundance")
+  dataset = c("D610044","D530001"),
+  feature = c("Clinical Data","Taxonomy Abundance")
 )
 # Filtered down to 6 records.
 
 # Batch download files and load into memory
 client$download_files(your_save_dir)$load_to_memory(your_save_dir)
-# File found, loading DTXR500068_pdata.csv into memory...
-# File found, loading DTXR500068_Differential_Microbial_Composition.csv into memory...
-# File found, loading DTXR500068_Microbial_Composition.csv into memory...
-# File found, loading DTXR600031_pdata.csv into memory...
-# File found, loading DTXR600031_Differential_Microbial_Composition.csv into memory...
-# File found, loading DTXR600031_Microbial_Composition.csv into memory...
+# File found, loading D530001_pdata.csv into memory...
+# File found, loading D530001_Differential_Taxonomy_Abundance.csv into memory...
+# File found, loading D530001_Taxonomy_Abundance.csv into memory...
+# File found, loading D610044_pdata.csv into memory...
+# File found, loading D610044_Differential_Taxonomy_Abundance.csv into memory...
+# File found, loading D610044_Taxonomy_Abundance.csv into memory...
 # 
 # All selected files successfully loaded into memory.
 ```
 
-#### 3. Data Visualization
+#### 4. Data Visualization
 Once the data is loaded into memory, you can use the built-in visualization methods.
 
 __Pie Plot__
 Pie chart for visualizing clinical baseline characteristics：
 ```R
 # View the proportion of different response groups in the dataset
-pie_plt <- client$plot_pie(dataset = "DTXR600031",clinical_col = "Response")
+pie_plt <- client$plot_pie(dataset = "D610044",clinical_col = "Response")
 
 # View gender ratio of patients
-# pie_plt <- client$plot_pie(dataset = "DTXR600031",clinical_col = "Sex")
+# pie_plt <- client$plot_pie(dataset = "D610044",clinical_col = "Sex")
 print(pie_plt)
 ```
 <div align=center>
@@ -115,8 +123,8 @@ Visualize differential expression results quickly:
 ```R
 # Plot a volcano plot for a specific dataset
 volcano_plt <- client$plot_volcano(
-  dataset = "DTXR600031", 
-  feature_type = "Microbial Abundance",
+  dataset = "D610044", 
+  feature_type = "Taxonomy Abundance",
   logX_col = "LogOR",
   pval_col = "P.value",
   fc_cutoff = 1.0, 
@@ -134,8 +142,8 @@ Compare the expression or values of a specific feature across clinical groups:
 ```R
 # Plot the abundance of Akkermansia across treatment response groups
 box_plt <- client$plot_boxplot(
-  dataset = "DTXR600031", 
-  feature_type = "Microbial Abundance", 
+  dataset = "D610044", 
+  feature_type = "Taxonomy Abundance", 
   feature_name = "g__Akkermansia", 
   group_col = "Response"
 )
@@ -151,8 +159,8 @@ Evaluate the predictive performance of a biomarker:
 ```R
 # Generate an ROC curve to assess Akkermansia as a predictor for Responder ("R")
 roc_plt <- client$plot_roc(
-  dataset = "DTXR600031", 
-  feature_type = "Microbial Abundance", 
+  dataset = "D610044", 
+  feature_type = "Taxonomy Abundance", 
   feature_name = "g__Akkermansia", 
   group_col = "Response", 
   positive_class = "R"
