@@ -12,7 +12,7 @@
 #' @export
 DiseaseCIO <- R6Class("DiseaseCIO",
                      private = list(
-                       api_token = "aHR0cDovLzIxOC44LjI0MS4yNDg6MzgzOC9EaXNUeFJFU1AvZG93bmxvYWQv",
+                       api_token = "aHR0cDovLzIxOC44LjI0MS4yNDg6MzgzOC9EaXNlYXNlQ0lPL2Rvd25sb2FkLw==",
                        feature_prefix_map = c(
                          "Gene Expression" = "Gene",
                          "Pathway Activity" = "Pathway",
@@ -246,8 +246,8 @@ DiseaseCIO <- R6Class("DiseaseCIO",
                            if (!dir.exists(temp_dir)) dir.create(temp_dir, recursive = TRUE)
 
                            dl_url <- ifelse(f_type=="AI-ready Data",
-                                            private$make_request(sprintf("%s/%s",data_id, f_name)),
-                                            private$make_request(sprintf("AI-ready data/%s", f_name)))
+                                            private$make_request(sprintf("AI-ready data/%s", f_name)),
+                                            private$make_request(sprintf("%s/%s",data_id, f_name)))
 
                            message(sprintf("Downloading %s...", f_name))
                            private$download_file(url = dl_url,destfile = file_name)
