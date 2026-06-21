@@ -48,7 +48,7 @@ print(search_res)
 browse_res <- client$browse_DCIO("D310042","Gene-level Methylation","ART3")
 # Connecting to DiseaseCIO...
 # Querying data...
-print(search_res)
+print(browse_res)
 ```
 #### 3. Filter and Load Data
 You can chain methods together to filter the required data sets, download them and load them into memory for analysis.
