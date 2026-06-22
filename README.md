@@ -27,7 +27,7 @@ Creating a new `DCIOquery` object will automatically fetch the latest data manif
 library(DCIOquery)
 
 # Initialize the client
-client <- DCIOquery$new()
+client <- DiseaseCIO$new()
 # Connecting to server and fetching metadata table...
 # Downloading: 310 kB
 
