@@ -38,7 +38,7 @@ DiseaseCIO <- R6Class("DiseaseCIO",
                          "Episcore" = "Episcore"
                        ),
                        make_request = function(endpoint) {
-                         dl_url = paste0(rawToChar(base64decode(private$api_token)), endpoint)
+                         dl_url = paste0(rawToChar(base64enc::base64decode(private$api_token)), endpoint)
                          return(dl_url)
                        },
                        download_file = function(url, destfile, progress=TRUE) {
@@ -161,6 +161,7 @@ DiseaseCIO <- R6Class("DiseaseCIO",
                        #' @param disease Character vector. The primary disease types to filter by (e.g., c("Leukemia")).
                        #' @param therapy Character vector. The therapy categorys applied to the cohorts (e.g., c("Targeted Therapy")).
                        #' @param treatment Character vector. The treatment regimens (e.g., c("Ruxolitinib")).
+                       #' @param threshold Character. Significance threshold, two options ("FDR<0.05" or "FDR<0.2").
                        #' @return A \code{data.frame} object.
                        search_DCIO = function(feature_type,feature_name,disease=NULL,therapy=NULL,treatment=NULL,
                                               threshold = c("FDR<0.05", "FDR<0.2")) {

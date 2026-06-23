@@ -19,5 +19,4 @@ Imports:
     httr,
     pROC,
     R6,
-    rlang,
-    utils
+    rlang

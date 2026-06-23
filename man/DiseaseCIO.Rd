@@ -22,6 +22,7 @@ An R6 client to interact with the DiseaseCIO database. It allows users to query 
 \itemize{
 \item \href{#method-DiseaseCIO-new}{\code{DiseaseCIO$new()}}
 \item \href{#method-DiseaseCIO-filter_metadata}{\code{DiseaseCIO$filter_metadata()}}
+\item \href{#method-DiseaseCIO-search_DCIO}{\code{DiseaseCIO$search_DCIO()}}
 \item \href{#method-DiseaseCIO-browse_DCIO}{\code{DiseaseCIO$browse_DCIO()}}
 \item \href{#method-DiseaseCIO-download_files}{\code{DiseaseCIO$download_files()}}
 \item \href{#method-DiseaseCIO-load_to_memory}{\code{DiseaseCIO$load_to_memory()}}
@@ -89,9 +90,9 @@ Filter the metadata table based on specific biological or clinical requirements.
 
 \item{\code{sampling_location}}{Character vector. The tissue origins or sampling locations(e.g., c("Tissue","Bone Marrow")).}
 
-\item{\code{feature}}{Character vector. The feature types to retain (e.g., c("Gene Expression","Clinical Data")).}
+\item{\code{feature}}{Character vector. The feature types to retain (e.g., c("Gene Expression","Clinical Data", "Corpus", "QA")).}
 
-\item{\code{file_type}}{Character vector. The file types to retain (e.g., c("Meta Info", "Feature Matrix")).}
+\item{\code{file_type}}{Character vector. The file types to retain (e.g., c("Meta Info", "Feature Matrix", "AI-ready Data")).}
 
 \item{\code{min_size}}{Integer. The minimum sample size required for a dataset to be retained. Defaults to 0.}
 }
@@ -102,10 +103,47 @@ Returns the modified R6 object invisibly, allowing for method chaining.
 }
 }
 \if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-DiseaseCIO-search_DCIO"></a>}}
+\if{latex}{\out{\hypertarget{method-DiseaseCIO-search_DCIO}{}}}
+\subsection{Method \code{search_DCIO()}}{
+Search module function of DiseaseCIO.
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{DiseaseCIO$search_DCIO(
+  feature_type,
+  feature_name,
+  disease = NULL,
+  therapy = NULL,
+  treatment = NULL,
+  threshold = c("FDR<0.05", "FDR<0.2")
+)}\if{html}{\out{</div>}}
+}
+
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{feature_type}}{String. The type of feature (e.g., "Gene Expression").You can view all feature types by using \code{unique(client$metadata$Feature_Type)}.}
+
+\item{\code{feature_name}}{String. The name of feature (e.g., "CTLA4").}
+
+\item{\code{disease}}{Character vector. The primary disease types to filter by (e.g., c("Leukemia")).}
+
+\item{\code{therapy}}{Character vector. The therapy categorys applied to the cohorts (e.g., c("Targeted Therapy")).}
+
+\item{\code{treatment}}{Character vector. The treatment regimens (e.g., c("Ruxolitinib")).}
+
+\item{\code{threshold}}{Character. Significance threshold, two options ("FDR<0.05" or "FDR<0.2").}
+}
+\if{html}{\out{</div>}}
+}
+\subsection{Returns}{
+A \code{data.frame} object.
+}
+}
+\if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-DiseaseCIO-browse_DCIO"></a>}}
 \if{latex}{\out{\hypertarget{method-DiseaseCIO-browse_DCIO}{}}}
 \subsection{Method \code{browse_DCIO()}}{
-Query feature information from DiseaseCIO.
+Browse module function of DiseaseCIO.
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{DiseaseCIO$browse_DCIO(dataset, feature_type, feature_name)}\if{html}{\out{</div>}}
 }
@@ -115,7 +153,7 @@ Query feature information from DiseaseCIO.
 \describe{
 \item{\code{dataset}}{String. The dataset identifier (e.g., "D100001").}
 
-\item{\code{feature_type}}{String. The type of feature (e.g., "Gene Expression").}
+\item{\code{feature_type}}{String. The type of feature (e.g., "Gene Expression").You can view all feature types by using \code{unique(client$metadata$Feature_Type)}.}
 
 \item{\code{feature_name}}{String. The name of feature (e.g., "CTLA4").}
 }
