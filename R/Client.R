@@ -210,8 +210,8 @@ DiseaseCIO <- R6Class("DiseaseCIO",
 
                          metadata = metadata[metadata$Dataset == dataset,]
                          metadata = metadata[metadata$Feature_Type == feature_type,]
-                         file_diff = metadata$File_URL
-                         if (length(file_diff)!=1) stop("No file found!")
+                         if (nrow(metadata)!=1) stop("No file found!")
+                         file_diff = private$make_request(sprintf("%s/%s",metadata$Dataset, metadata$File_Name))
 
                          diff_tb = private$query_file(gsub("csv$","fst",file_diff),file_type = "fst")
                          diff_tb = diff_tb[diff_tb$ID==feature_name,]
