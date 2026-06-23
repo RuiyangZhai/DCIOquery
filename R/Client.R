@@ -42,19 +42,26 @@ DiseaseCIO <- R6Class("DiseaseCIO",
                          return(dl_url)
                        },
                        download_file = function(url, destfile, progress=TRUE) {
-                         if (progress) {
-                           response <- httr::GET(url,
-                                                 httr::write_disk(destfile, overwrite = TRUE),
-                                                 httr::progress(),
-                                                 httr::config(max_recv_speed_large = 1000000))
-                         }else{
-                           response <- httr::GET(url,
-                                                 httr::write_disk(destfile, overwrite = TRUE),
-                                                 httr::config(max_recv_speed_large = 1000000))
-                         }
-                         if(httr::http_error(response)) {
+                         sig = tryCatch({
+                           if (progress) {
+                             response <- httr::GET(url,
+                                                   httr::write_disk(destfile, overwrite = TRUE),
+                                                   httr::progress(),
+                                                   httr::config(max_recv_speed_large = 1000000))
+                           }else{
+                             response <- httr::GET(url,
+                                                   httr::write_disk(destfile, overwrite = TRUE),
+                                                   httr::config(max_recv_speed_large = 1000000))
+                           }
+                         }, error = function(e) {
+                           return(NULL)
+                         })
+                         if (is.null(sig)) {
+                           stop("Connection error!")
+                         }else if(httr::http_error(response)) {
                            stop("Download failed: ", httr::http_status(response)$message)
                          }
+
                          return(invisible(response))
                        },
                        query_file = function(url,progress=FALSE,file_type="csv") {
