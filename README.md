@@ -1,10 +1,10 @@
 # DCIOquery
 
-**DCIOquery** is an intuitive, R6-based client package designed to interact with the DiseaseCIO database. It streamlines the entire bioinformatics workflow from data retrieval to visualization. 
+**DCIOquery** is an intuitive, R6-based client package that provides programmatic access to the DiseaseCIO database by automating file-based data retrieval. It streamlines the entire bioinformatics workflow from data retrieval to visualization.
 
 With `DiseaseCIO`, you can easily:
 * **Query & Filter**: Search the global metadata manifest using specific biological and clinical criteria (e.g., disease type, omics data, treatment regimens).
-* **Search & Browse**: Use the DiseaseCIO database search and browsing functions.
+* **Search & Browse**: Programmatically access the DiseaseCIO database and utilize its search and browsing functionalities.
 * **Batch Download**: Automatically download selected clinical data, feature matrices, and differential analysis results to your local machine.
 * **In-Memory Analysis**: Load targeted datasets directly into the R environment as structured lists.
 * **Built-in Visualization**: Generate high-quality, publication-ready plots (Volcano plots, Boxplots, and ROC curves) with simple, one-line commands.
@@ -27,7 +27,7 @@ Creating a new `DCIOquery` object will automatically fetch the latest data manif
 library(DCIOquery)
 
 # Initialize the client
-client <- DCIOquery$new()
+client <- DiseaseCIO$new()
 # Connecting to server and fetching metadata table...
 # Downloading: 310 kB
 
@@ -48,7 +48,7 @@ print(search_res)
 browse_res <- client$browse_DCIO("D310042","Gene-level Methylation","ART3")
 # Connecting to DiseaseCIO...
 # Querying data...
-print(search_res)
+print(browse_res)
 ```
 #### 3. Filter and Load Data
 You can chain methods together to filter the required data sets, download them and load them into memory for analysis.
