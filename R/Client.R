@@ -41,28 +41,42 @@ DiseaseCIO <- R6Class("DiseaseCIO",
                          dl_url = paste0(rawToChar(base64enc::base64decode(private$api_token)), endpoint)
                          return(dl_url)
                        },
-                       download_file = function(url, destfile, progress=TRUE) {
-                         sig = tryCatch({
-                           if (progress) {
-                             response <- httr::GET(url,
-                                                   httr::write_disk(destfile, overwrite = TRUE),
-                                                   httr::progress(),
-                                                   httr::config(max_recv_speed_large = 1000000))
-                           }else{
-                             response <- httr::GET(url,
-                                                   httr::write_disk(destfile, overwrite = TRUE),
-                                                   httr::config(max_recv_speed_large = 1000000))
-                           }
-                         }, error = function(e) {
-                           return(NULL)
-                         })
-                         if (is.null(sig)) {
-                           stop("Connection error!")
-                         }else if(httr::http_error(response)) {
-                           stop("Download failed: ", httr::http_status(response)$message)
-                         }
+                       download_file = function(url, destfile, progress = TRUE, timeout = 60) {
+                         tmp <- tempfile()
+                         on.exit(unlink(tmp), add = TRUE)
 
-                         return(invisible(response))
+                         tryCatch({
+                           if (progress) {
+                             response <- httr::GET(
+                               url,
+                               httr::write_disk(tmp, overwrite = TRUE),
+                               httr::progress(),
+                               httr::timeout(timeout),
+                               httr::config(max_recv_speed_large = 1000000)
+                             )
+                           } else {
+                             response <- httr::GET(
+                               url,
+                               httr::write_disk(tmp, overwrite = TRUE),
+                               httr::timeout(timeout),
+                               httr::config(max_recv_speed_large = 1000000)
+                             )
+                           }
+
+                           if (httr::http_error(response)) {
+                             stop("Download failed: ", httr::http_status(response)$message)
+                           }
+
+                           if (!file.copy(tmp, destfile, overwrite = TRUE)) {
+                             stop("Failed to move temporary file to ", destfile)
+                           }
+                           unlink(tmp)
+                           return(invisible(response))
+
+                         }, error = function(e) {
+
+                           stop("Connection error!")
+                         })
                        },
                        query_file = function(url,progress=FALSE,file_type="csv") {
                          temp_file <- tempfile()
