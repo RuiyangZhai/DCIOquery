@@ -41,13 +41,23 @@ DiseaseCIO <- R6Class("DiseaseCIO",
                          dl_url = paste0(rawToChar(base64enc::base64decode(private$api_token)), endpoint)
                          return(dl_url)
                        },
-                       download_file = function(url, destfile, progress = TRUE, timeout = 60) {
+                       download_file = function(url,
+                                                destfile = NULL,
+                                                progress = TRUE,
+                                                timeout = 60,
+                                                parse = c("none", "csv", "fst")) {
+                         parse <- match.arg(parse)
+
+                         if (parse != "none" && is.null(destfile)) {
+                           destfile <- tempfile()
+                         }
+
                          tmp <- tempfile()
                          on.exit(unlink(tmp), add = TRUE)
 
-                         tryCatch({
+                         response <- tryCatch({
                            if (progress) {
-                             response <- httr::GET(
+                             httr::GET(
                                url,
                                httr::write_disk(tmp, overwrite = TRUE),
                                httr::progress(),
@@ -55,46 +65,41 @@ DiseaseCIO <- R6Class("DiseaseCIO",
                                httr::config(max_recv_speed_large = 1000000)
                              )
                            } else {
-                             response <- httr::GET(
+                             httr::GET(
                                url,
                                httr::write_disk(tmp, overwrite = TRUE),
                                httr::timeout(timeout),
                                httr::config(max_recv_speed_large = 1000000)
                              )
                            }
+                         }, error = function(e) {
+                           stop("Connection error!")
+                         })
 
-                           if (httr::http_error(response)) {
-                             stop("Download failed: ", httr::http_status(response)$message)
-                           }
+                         if (httr::http_error(response)) {
+                           stop("Download failed: ", httr::http_status(response)$message)
+                         }
 
-                           if (!file.copy(tmp, destfile, overwrite = TRUE)) {
-                             stop("Failed to move temporary file to ", destfile)
+                         if (!file.copy(tmp, destfile, overwrite = TRUE)) {
+                           stop("Failed to move temporary file to ", destfile)
+                         }
+                         unlink(tmp)
+
+                         if (parse == "csv") {
+                           data <- data.table::fread(destfile, data.table = FALSE, header = TRUE)
+                           if (is.null(destfile) || inherits(destfile, "tempfile")) {
+                             unlink(destfile)
                            }
-                           unlink(tmp)
+                           return(data)
+                         } else if (parse == "fst") {
+                           data <- fst::read.fst(destfile)
+                           if (is.null(destfile) || inherits(destfile, "tempfile")) {
+                             unlink(destfile)
+                           }
+                           return(data)
+                         } else {
                            return(invisible(response))
-
-                         }, error = function(e) {
-
-                           stop("Connection error!")
-                         })
-                       },
-                       query_file = function(url,progress=FALSE,file_type="csv") {
-                         temp_file <- tempfile()
-                         sig = tryCatch({
-                           private$download_file(url = url,destfile = temp_file,progress=progress)
-                         }, error = function(e) {
-                           return(NULL)
-                         })
-                         if (is.null(sig)) {
-                           stop("Connection error!")
                          }
-                         if (file_type=="csv") {
-                           temp <- fread(temp_file,data.table = FALSE,header = TRUE)
-                         }else if (file_type=="fst") {
-                           temp <- read.fst(temp_file)
-                         }
-                         unlink(temp_file)
-                         return(temp)
                        }
                      ),
                      public = list(
@@ -113,7 +118,7 @@ DiseaseCIO <- R6Class("DiseaseCIO",
                            message("Connecting to server and fetching metadata table...")
                            meta_url <- private$make_request("Download_Manifest.csv")
 
-                           private$download_file(url = meta_url, destfile = manifest)
+                           private$download_file(url = meta_url, destfile = manifest, progress = TRUE, parse = "none")
 
                          }else{
                            message("Local file found, reading...")
@@ -196,7 +201,7 @@ DiseaseCIO <- R6Class("DiseaseCIO",
                          search_all <- switch(threshold,
                                              "FDR<0.05" = paste0("searchall/",feature,"_SearchAll_out_fdr0.05.fst"),
                                              "FDR<0.2"  = paste0("searchall/",feature,"_SearchAll_out_fdr0.2.fst"))
-                         metadata <- private$query_file(private$make_request(search_all),file_type = "fst")
+                         metadata <- private$download_file(private$make_request(search_all), progress = FALSE, parse = "fst")
 
                          message("Searching data...")
                          metadata = metadata[metadata$ID == feature_name,]
@@ -224,7 +229,7 @@ DiseaseCIO <- R6Class("DiseaseCIO",
                          if (length(feature_name)!=1) stop("Only one feature_name id can be input!")
 
                          message("Connecting to DiseaseCIO...")
-                         metadata <- private$query_file(private$make_request("Download_Manifest.csv"))
+                         metadata <- private$download_file(private$make_request("Download_Manifest.csv"), progress = FALSE, parse = "csv")
 
                          message("Querying data...")
                          metadata = metadata[metadata$File_Type=="Differential Results",]
@@ -234,7 +239,7 @@ DiseaseCIO <- R6Class("DiseaseCIO",
                          if (nrow(metadata)!=1) stop("No file found!")
                          file_diff = private$make_request(sprintf("%s/%s",metadata$Dataset, metadata$File_Name))
 
-                         diff_tb = private$query_file(gsub("csv$","fst",file_diff),file_type = "fst")
+                         diff_tb = private$download_file(gsub("csv$","fst",file_diff), progress = FALSE, parse = "fst")
                          diff_tb = diff_tb[diff_tb$ID==feature_name,]
 
                          if (nrow(diff_tb)==0) stop("No feature found!")
@@ -271,7 +276,7 @@ DiseaseCIO <- R6Class("DiseaseCIO",
                                             private$make_request(sprintf("%s/%s",data_id, f_name)))
 
                            message(sprintf("Downloading %s...", f_name))
-                           private$download_file(url = dl_url,destfile = file_name)
+                           private$download_file(url = dl_url, destfile = file_name, progress = TRUE, parse = "none")
                          }
                          message(" \n Batch download complete.")
                          return(invisible(self))
@@ -290,6 +295,9 @@ DiseaseCIO <- R6Class("DiseaseCIO",
                            f_type <- gsub(" ","_",row_data$File_Type)
                            f_name <- row_data$File_Name
                            feature <- row_data$Feature_Type
+                           if (f_type=="AI-ready_Data") {
+                             next
+                           }
 
                            if (!is.null(local_dir)) {
                              temp_dir <- ifelse(f_type=="Meta_Info",paste0(local_dir,"/",data_id),paste0(local_dir,"/",data_id,"/",f_type))
