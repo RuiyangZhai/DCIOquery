@@ -1,11 +1,11 @@
 Package: DCIOquery
-Title: What the Package Does (One Line, Title Case)
+Title:  Client Interface (Query, Download and Visualize) for the DiceaseCIO Database
 Version: 0.1.0
 Authors@R: c(
     person("Te", "Ma", , "mate.compbio@foxmail.com", role = c("aut", "cre")),
     person("Ruiyang", "Zhai", , "zhairuiyang@foxmail.com", role = "aut")
   )
-Description: What the package does (one paragraph).
+Description: DCIOquery is an intuitive, R6-based client package that provides programmatic access to the DiseaseCIO database by automating file-based data retrieval. It streamlines the entire bioinformatics workflow from data retrieval to visualization.
 License: MIT + file LICENSE
 Encoding: UTF-8
 Roxygen: list(markdown = TRUE)

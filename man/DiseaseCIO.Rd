@@ -64,10 +64,10 @@ Filter the metadata table based on specific biological or clinical requirements.
   omic = NULL,
   disease = NULL,
   disease_sub = NULL,
-  therapy = NULL,
-  treatment = NULL,
+  therapy_category = NULL,
+  treatment_regimen = NULL,
   sampling_location = NULL,
-  feature = NULL,
+  feature_type = NULL,
   file_type = NULL,
   min_size = 0
 )}\if{html}{\out{</div>}}
@@ -84,13 +84,13 @@ Filter the metadata table based on specific biological or clinical requirements.
 
 \item{\code{disease_sub}}{Character vector. The specific disease subtypes (e.g., c("Acute myeloid leukemia")).}
 
-\item{\code{therapy}}{Character vector. The therapy categorys applied to the cohorts (e.g., c("Targeted Therapy")).}
+\item{\code{therapy_category}}{Character vector. The therapy categorys applied to the cohorts (e.g., c("Targeted Therapy")).}
 
-\item{\code{treatment}}{Character vector. The treatment regimens (e.g., c("Ruxolitinib")).}
+\item{\code{treatment_regimen}}{Character vector. The treatment regimens (e.g., c("Ruxolitinib")).}
 
 \item{\code{sampling_location}}{Character vector. The tissue origins or sampling locations(e.g., c("Tissue","Bone Marrow")).}
 
-\item{\code{feature}}{Character vector. The feature types to retain (e.g., c("Gene Expression","Clinical Data", "Corpus", "QA")).}
+\item{\code{feature_type}}{Character vector. The feature types to retain (e.g., c("Gene Expression","Clinical Data", "Corpus", "QA")).You can view all feature types by using \code{unique(client$metadata$Feature_Type)}.}
 
 \item{\code{file_type}}{Character vector. The file types to retain (e.g., c("Meta Info", "Feature Matrix", "AI-ready Data")).}
 
@@ -112,8 +112,8 @@ Search module function of DiseaseCIO.
   feature_type,
   feature_name,
   disease = NULL,
-  therapy = NULL,
-  treatment = NULL,
+  therapy_category = NULL,
+  treatment_regimen = NULL,
   threshold = c("FDR<0.05", "FDR<0.2")
 )}\if{html}{\out{</div>}}
 }
@@ -121,15 +121,15 @@ Search module function of DiseaseCIO.
 \subsection{Arguments}{
 \if{html}{\out{<div class="arguments">}}
 \describe{
-\item{\code{feature_type}}{String. The type of feature (e.g., "Gene Expression").You can view all feature types by using \code{unique(client$metadata$Feature_Type)}.}
+\item{\code{feature_type}}{String. The type of feature. Microbiomics (6): "Taxonomy Abundance"; "Alpha Diversity"; "Microbial Function"; "Enzymatic Activity"; "Antibiotic Resistance Gene"; "Virulence Factor"; Transcriptomics (8):"Gene Expression"; "Pathway Activity"; "Immune Infiltration(RNA)"; "TF Regulon Activity"; "Secreted Protein Activity"; "Cell Death Mode"; "Metabolic Flux Score"; "Ligand-Receptor Pair"; Epigenomics (6): "CpG-level Methylation"; "Gene-level Methylation"; "Epigenomic Regulation"; "Immune Infiltration(DNAm)"; "Epigenetic Clock"; "Episcore".}
 
 \item{\code{feature_name}}{String. The name of feature (e.g., "CTLA4").}
 
 \item{\code{disease}}{Character vector. The primary disease types to filter by (e.g., c("Leukemia")).}
 
-\item{\code{therapy}}{Character vector. The therapy categorys applied to the cohorts (e.g., c("Targeted Therapy")).}
+\item{\code{therapy_category}}{Character vector. The therapy categorys applied to the cohorts (e.g., c("Targeted Therapy")).}
 
-\item{\code{treatment}}{Character vector. The treatment regimens (e.g., c("Ruxolitinib")).}
+\item{\code{treatment_regimen}}{Character vector. The treatment regimens (e.g., c("Ruxolitinib")).}
 
 \item{\code{threshold}}{Character. Significance threshold, two options ("FDR<0.05" or "FDR<0.2").}
 }
@@ -153,7 +153,7 @@ Browse module function of DiseaseCIO.
 \describe{
 \item{\code{dataset}}{String. The dataset identifier (e.g., "D100001").}
 
-\item{\code{feature_type}}{String. The type of feature (e.g., "Gene Expression").You can view all feature types by using \code{unique(client$metadata$Feature_Type)}.}
+\item{\code{feature_type}}{String. The type of feature.Microbiomics (6): "Taxonomy Abundance"; "Alpha Diversity"; "Microbial Function"; "Enzymatic Activity"; "Antibiotic Resistance Gene"; "Virulence Factor"; Transcriptomics (8):"Gene Expression"; "Pathway Activity"; "Immune Infiltration(RNA)"; "TF Regulon Activity"; "Secreted Protein Activity"; "Cell Death Mode"; "Metabolic Flux Score"; "Ligand-Receptor Pair"; Epigenomics (6): "CpG-level Methylation"; "Gene-level Methylation"; "Epigenomic Regulation"; "Immune Infiltration(DNAm)"; "Epigenetic Clock"; "Episcore".}
 
 \item{\code{feature_name}}{String. The name of feature (e.g., "CTLA4").}
 }

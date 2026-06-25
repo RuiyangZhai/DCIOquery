@@ -132,17 +132,17 @@ DiseaseCIO <- R6Class("DiseaseCIO",
                        #' @param omic Character vector. The omics data types to retain (e.g., c("Transcriptomics")"").
                        #' @param disease Character vector. The primary disease types to filter by (e.g., c("Leukemia")).
                        #' @param disease_sub Character vector. The specific disease subtypes (e.g., c("Acute myeloid leukemia")).
-                       #' @param therapy Character vector. The therapy categorys applied to the cohorts (e.g., c("Targeted Therapy")).
-                       #' @param treatment Character vector. The treatment regimens (e.g., c("Ruxolitinib")).
+                       #' @param therapy_category Character vector. The therapy categorys applied to the cohorts (e.g., c("Targeted Therapy")).
+                       #' @param treatment_regimen Character vector. The treatment regimens (e.g., c("Ruxolitinib")).
                        #' @param sampling_location Character vector. The tissue origins or sampling locations(e.g., c("Tissue","Bone Marrow")).
-                       #' @param feature Character vector. The feature types to retain (e.g., c("Gene Expression","Clinical Data", "Corpus", "QA")).
+                       #' @param feature_type Character vector. The feature types to retain (e.g., c("Gene Expression","Clinical Data", "Corpus", "QA")).You can view all feature types by using `unique(client$metadata$Feature_Type)`.
                        #' @param file_type Character vector. The file types to retain (e.g., c("Meta Info", "Feature Matrix", "AI-ready Data")).
                        #' @param min_size Integer. The minimum sample size required for a dataset to be retained. Defaults to 0.
                        #' @return Returns the modified R6 object invisibly, allowing for method chaining.
                        filter_metadata = function(dataset=NULL,omic = NULL,disease = NULL,
-                                                  disease_sub = NULL,therapy = NULL,
-                                                  treatment = NULL,sampling_location = NULL,
-                                                  feature = NULL, file_type = NULL,min_size=0) {
+                                                  disease_sub = NULL,therapy_category = NULL,
+                                                  treatment_regimen = NULL,sampling_location = NULL,
+                                                  feature_type = NULL, file_type = NULL,min_size=0) {
                          if (is.null(self$metadata)) stop("Metadata is empty. Please re-initialize.")
                          temp_df <- self$metadata
 
@@ -158,17 +158,17 @@ DiseaseCIO <- R6Class("DiseaseCIO",
                          if (!is.null(disease_sub)) {
                            temp_df <- temp_df[grepl(paste0(disease_sub,collapse = "|"),temp_df$Disease_Subtype), ]
                          }
-                         if (!is.null(therapy)) {
-                           temp_df <- temp_df[grepl(paste0(therapy,collapse = "|"),temp_df$Therapy_Category), ]
+                         if (!is.null(therapy_category)) {
+                           temp_df <- temp_df[grepl(paste0(therapy_category,collapse = "|"),temp_df$Therapy_Category), ]
                          }
-                         if (!is.null(treatment)) {
-                           temp_df <- temp_df[grepl(paste0(treatment,collapse = "|"),temp_df$Treatment_Regimen), ]
+                         if (!is.null(treatment_regimen)) {
+                           temp_df <- temp_df[grepl(paste0(treatment_regimen,collapse = "|"),temp_df$Treatment_Regimen), ]
                          }
                          if (!is.null(sampling_location)) {
                            temp_df <- temp_df[grepl(paste0(sampling_location,collapse = "|"),temp_df$Sampling_Location), ]
                          }
-                         if (!is.null(feature)) {
-                           temp_df <- temp_df[grepl(paste0(feature,collapse = "|"),temp_df$Feature_Type), ]
+                         if (!is.null(feature_type)) {
+                           temp_df <- temp_df[grepl(paste0(feature_type,collapse = "|"),temp_df$Feature_Type), ]
                          }
                          if (!is.null(file_type)) {
                            temp_df <- temp_df[grepl(paste0(file_type,collapse = "|"),temp_df$File_Type), ]
@@ -182,14 +182,14 @@ DiseaseCIO <- R6Class("DiseaseCIO",
                          return(invisible(self))
                        },
                        #' @description Search module function of DiseaseCIO.
-                       #' @param feature_type String. The type of feature (e.g., "Gene Expression").You can view all feature types by using `unique(client$metadata$Feature_Type)`.
+                       #' @param feature_type String. The type of feature. Microbiomics (6): "Taxonomy Abundance"; "Alpha Diversity"; "Microbial Function"; "Enzymatic Activity"; "Antibiotic Resistance Gene"; "Virulence Factor"; Transcriptomics (8):"Gene Expression"; "Pathway Activity"; "Immune Infiltration(RNA)"; "TF Regulon Activity"; "Secreted Protein Activity"; "Cell Death Mode"; "Metabolic Flux Score"; "Ligand-Receptor Pair"; Epigenomics (6): "CpG-level Methylation"; "Gene-level Methylation"; "Epigenomic Regulation"; "Immune Infiltration(DNAm)"; "Epigenetic Clock"; "Episcore".
                        #' @param feature_name String. The name of feature (e.g., "CTLA4").
                        #' @param disease Character vector. The primary disease types to filter by (e.g., c("Leukemia")).
-                       #' @param therapy Character vector. The therapy categorys applied to the cohorts (e.g., c("Targeted Therapy")).
-                       #' @param treatment Character vector. The treatment regimens (e.g., c("Ruxolitinib")).
+                       #' @param therapy_category Character vector. The therapy categorys applied to the cohorts (e.g., c("Targeted Therapy")).
+                       #' @param treatment_regimen Character vector. The treatment regimens (e.g., c("Ruxolitinib")).
                        #' @param threshold Character. Significance threshold, two options ("FDR<0.05" or "FDR<0.2").
                        #' @return A \code{data.frame} object.
-                       search_DCIO = function(feature_type,feature_name,disease=NULL,therapy=NULL,treatment=NULL,
+                       search_DCIO = function(feature_type,feature_name,disease=NULL,therapy_category=NULL,treatment_regimen=NULL,
                                               threshold = c("FDR<0.05", "FDR<0.2")) {
                          threshold <- match.arg(threshold)
                          if (length(feature_type)!=1) stop("Only one feature_type id can be input!")
@@ -203,16 +203,20 @@ DiseaseCIO <- R6Class("DiseaseCIO",
                                              "FDR<0.2"  = paste0("searchall/",feature,"_SearchAll_out_fdr0.2.fst"))
                          metadata <- private$download_file(private$make_request(search_all), progress = FALSE, parse = "fst")
 
+                         metadata <- switch(threshold,
+                                            "FDR<0.05" = metadata[metadata$P.adjust<0.05,],
+                                            "FDR<0.2"  = metadata[metadata$P.adjust<0.2,])
+
                          message("Searching data...")
                          metadata = metadata[metadata$ID == feature_name,]
                          if (!is.null(disease)) {
                            metadata <- metadata[grepl(paste0(disease,collapse = "|"),metadata$Disease_Type), ]
                          }
-                         if (!is.null(therapy)) {
-                           metadata <- metadata[grepl(paste0(therapy,collapse = "|"),metadata$Therapy_Category), ]
+                         if (!is.null(therapy_category)) {
+                           metadata <- metadata[grepl(paste0(therapy_category,collapse = "|"),metadata$Therapy_Category), ]
                          }
-                         if (!is.null(treatment)) {
-                           metadata <- metadata[grepl(paste0(treatment,collapse = "|"),metadata$Treatment_Regimen), ]
+                         if (!is.null(treatment_regimen)) {
+                           metadata <- metadata[grepl(paste0(treatment_regimen,collapse = "|"),metadata$Treatment_Regimen), ]
                          }
                          if (nrow(metadata)==0) stop("No dataset found!")
                          rownames(metadata) = NULL
@@ -220,7 +224,7 @@ DiseaseCIO <- R6Class("DiseaseCIO",
                        },
                        #' @description Browse module function of DiseaseCIO.
                        #' @param dataset String. The dataset identifier (e.g., "D100001").
-                       #' @param feature_type String. The type of feature (e.g., "Gene Expression").You can view all feature types by using `unique(client$metadata$Feature_Type)`.
+                       #' @param feature_type String. The type of feature.Microbiomics (6): "Taxonomy Abundance"; "Alpha Diversity"; "Microbial Function"; "Enzymatic Activity"; "Antibiotic Resistance Gene"; "Virulence Factor"; Transcriptomics (8):"Gene Expression"; "Pathway Activity"; "Immune Infiltration(RNA)"; "TF Regulon Activity"; "Secreted Protein Activity"; "Cell Death Mode"; "Metabolic Flux Score"; "Ligand-Receptor Pair"; Epigenomics (6): "CpG-level Methylation"; "Gene-level Methylation"; "Epigenomic Regulation"; "Immune Infiltration(DNAm)"; "Epigenetic Clock"; "Episcore".
                        #' @param feature_name String. The name of feature (e.g., "CTLA4").
                        #' @return A \code{list} object.
                        browse_DCIO = function(dataset,feature_type,feature_name) {
